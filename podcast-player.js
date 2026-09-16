@@ -33,36 +33,34 @@
 
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-    if (Number.isInteger(saved.current) && saved.current >= 0 && saved.current < episodes.length) {
-      currentIndex = saved.current;
-    }
+    if (Number.isInteger(saved.current) && saved.current >= 0 && saved.current < episodes.length) currentIndex = saved.current;
   } catch (_) {}
 
   function save() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ current: currentIndex })); } catch (_) {}
   }
 
-  function pickDifferent() {
-    if (episodes.length < 2) return 0;
-    let next = currentIndex ?? -1;
-    while (next === currentIndex) next = Math.floor(Math.random() * episodes.length);
+  function pickDifferent(previousIndex = currentIndex) {
+    if (episodes.length <= 1) return 0;
+    let next = Math.floor(Math.random() * episodes.length);
+    while (next === previousIndex) next = Math.floor(Math.random() * episodes.length);
     return next;
   }
 
   const style = document.createElement('style');
   style.textContent = `
     #sc-podcast-root{position:relative;z-index:2147483000;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    #sc-podcast-launcher{position:fixed;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:2147483000;border:1px solid rgba(255,255,255,.22);border-radius:999px;background:#15121b;color:#f6ead1;padding:12px 18px;font:800 14px/1.2 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;box-shadow:0 12px 35px rgba(0,0,0,.5);cursor:pointer;white-space:nowrap}
+    #sc-podcast-launcher{position:fixed;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:2147483000;border:1px solid rgba(255,255,255,.22);border-radius:999px;background:#15121b;color:#f6ead1;padding:12px 18px;font:800 14px/1.2 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;box-shadow:0 12px 35px rgba(0,0,0,.5);cursor:pointer;white-space:nowrap;touch-action:manipulation;pointer-events:auto}
     #sc-podcast-launcher:hover{background:#211b2a}
-    #sc-podcast-panel{position:fixed;left:50%;bottom:max(8px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:2147483000;width:min(620px,calc(100vw - 16px));box-sizing:border-box;border:1px solid #4a3b5d;border-radius:18px;background:#100d15;color:#f8f0df;padding:13px;box-shadow:0 18px 50px rgba(0,0,0,.65)}
+    #sc-podcast-panel{position:fixed;left:50%;bottom:max(8px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:2147483000;width:min(620px,calc(100vw - 16px));box-sizing:border-box;border:1px solid #4a3b5d;border-radius:18px;background:#100d15;color:#f8f0df;padding:13px;box-shadow:0 18px 50px rgba(0,0,0,.65);pointer-events:auto}
     .sc-podcast-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
     .sc-podcast-kicker{font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#d7b679}
     .sc-podcast-title{font-size:16px;line-height:1.3;margin:4px 0 0;color:#fff6df}
     .sc-podcast-meta{font-size:12px;line-height:1.4;color:#cfc4d7;margin:5px 0 0}
-    .sc-podcast-close{width:40px;height:40px;flex:0 0 40px;border:1px solid #4a3b5d;border-radius:50%;background:#211b2a;color:#fff6df;font-size:22px;cursor:pointer}
+    .sc-podcast-close{width:40px;height:40px;flex:0 0 40px;border:1px solid #4a3b5d;border-radius:50%;background:#211b2a;color:#fff6df;font-size:22px;cursor:pointer;touch-action:manipulation}
     .sc-podcast-frame{display:block;width:100%;height:152px;border:0;border-radius:12px;background:#050307}
     .sc-podcast-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-    .sc-podcast-button,.sc-podcast-link{border-radius:10px;padding:9px 12px;font:800 13px/1.2 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;text-decoration:none;cursor:pointer}
+    .sc-podcast-button,.sc-podcast-link{border-radius:10px;padding:9px 12px;font:800 13px/1.2 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;text-decoration:none;cursor:pointer;touch-action:manipulation}
     .sc-podcast-button{border:0;background:#7d5532;color:#fff8e8}.sc-podcast-link{display:inline-flex;align-items:center;border:1px solid #5d4a70;background:#211b2a;color:#fff6df}
     .sc-podcast-note{font-size:11px;color:#a99db4;margin:9px 0 0}
     #sc-podcast-launcher:focus-visible,.sc-podcast-close:focus-visible,.sc-podcast-button:focus-visible,.sc-podcast-link:focus-visible{outline:3px solid #d7b679;outline-offset:3px}
@@ -77,15 +75,21 @@
   function render() {
     if (!open) {
       root.innerHTML = '<button id="sc-podcast-launcher" type="button" aria-label="Open Sword Coast and Dungeons and Dragons podcasts">🎧 Podcasts</button>';
-      root.querySelector('#sc-podcast-launcher').addEventListener('click', () => {
-        if (currentIndex === null) {
-          currentIndex = pickDifferent();
+      const launcher = root.querySelector('#sc-podcast-launcher');
+      launcher.addEventListener('click', () => {
+        if (!Number.isInteger(currentIndex) || currentIndex < 0 || currentIndex >= episodes.length) {
+          currentIndex = pickDifferent(null);
           save();
         }
         open = true;
         render();
       });
       return;
+    }
+
+    if (!Number.isInteger(currentIndex) || currentIndex < 0 || currentIndex >= episodes.length) {
+      currentIndex = pickDifferent(null);
+      save();
     }
 
     const current = episodes[currentIndex];
@@ -118,7 +122,7 @@
     link.href = spotifyUrl;
     root.querySelector('.sc-podcast-close').addEventListener('click', () => { open = false; render(); });
     root.querySelector('.sc-podcast-button').addEventListener('click', () => {
-      currentIndex = pickDifferent();
+      currentIndex = pickDifferent(currentIndex);
       save();
       render();
     });
