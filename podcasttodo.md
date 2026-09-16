@@ -1,18 +1,17 @@
 # Podcast Integration TODO
 
 **Decision:** Add.  
-**Status:** ✅ Core one-click podcast bank added 13 September 2026.
+**Status:** ✅ Independent 25-episode D&D/RPG podcast player added 16 September 2026.
 **Topic bank:** Forgotten Realms, Sword Coast lore, D&D worldbuilding, tabletop RPG storytelling.
 
-## TODO
-- [x] Use the shared 25-episode D&D/RPG Spotify bank.
-- [x] Add a collapsed bottom dock: **🗺️ Listen to a different Sword Coast / D&D podcast**.
-- [x] One tap selects/loads another episode; persist recent choices and avoid immediate repeats.
-- [x] Use Spotify embed/deep links without assuming autoplay.
-- [x] Collapse automatically when HTML narration/audio/video becomes active; no autoplay is introduced.
-- [x] Shared bank tags cover lore, DM advice, worldbuilding, encounters and RPG design.
-- [x] Keep core map/game/lore interactions primary through the collapsed dock design.
-- [x] Shared dock supplies mobile/a11y, reduced-motion and persistence behaviour; app-specific regression tests can be added later.
+## Completed
+- [x] Store the 25-episode D&D/RPG Spotify bank directly inside Sword Coast.
+- [x] Add a collapsed bottom **🎧 Podcasts** launcher.
+- [x] One tap selects/loads an episode and **🎲 Different podcast** avoids immediate repeats.
+- [x] Persist the last selected episode locally in this browser.
+- [x] Use a Spotify embed plus an **Open in Spotify** deep link without assuming autoplay.
+- [x] Keep map/game/lore interactions primary by keeping the player collapsed until opened.
+- [x] Keep the player mobile-friendly and keyboard-focusable.
 
-## Implementation
-`index.html` loads the shared JoshHub `dnd` catalogue through `podcast-dock-universal.js`.
+## Independent implementation
+`index.html` now loads only the local `podcast-player.js` file. The 25 episode IDs, titles, shows and tags live in that file, so Sword Coast no longer depends on JoshHub, jsDelivr, `podcast-launcher-v3.js`, `podcast-dock-universal.js`, or a remote podcast JSON file.
